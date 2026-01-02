@@ -5,6 +5,12 @@ set -e
 echo "Waiting for MySQL..."
 sleep 10
 
+# Fix APP_URL for Railway (add https:// prefix)
+if [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
+    export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+    export ASSET_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+fi
+
 # Run Laravel optimizations
 php artisan config:clear || true
 php artisan cache:clear || true
@@ -33,4 +39,5 @@ php artisan view:cache || true
 
 # Start PHP built-in server
 echo "Starting PHP server on port 8080..."
+echo "APP_URL: $APP_URL"
 exec php artisan serve --host=0.0.0.0 --port=8080
