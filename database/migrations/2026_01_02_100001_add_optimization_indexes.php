@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -12,39 +13,60 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // For SQLite, we need to check if index exists before creating
-        $driver = Schema::getConnection()->getDriverName();
+        // Orders table indexes
+        if (!$this->indexExists('orders', 'orders_order_number_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('order_number', 'orders_order_number_index');
+            });
+        }
 
-        if ($driver === 'sqlite') {
-            // SQLite: Check existing indexes and create if not exists
-            $this->createIndexIfNotExists('orders', 'order_number', 'orders_order_number_index');
-            $this->createIndexIfNotExists('orders', 'payment_status', 'orders_payment_status_index');
-            $this->createIndexIfNotExists('orders', 'production_status', 'orders_production_status_index');
-            $this->createIndexIfNotExists('transactions', 'account_id', 'transactions_account_id_index');
-            $this->createIndexIfNotExists('transactions', 'transaction_date', 'transactions_transaction_date_index');
-            $this->createIndexIfNotExists('transactions', 'order_id', 'transactions_order_id_index');
-        } else {
-            // MySQL/MariaDB: Use native index creation
-            DB::statement('CREATE INDEX IF NOT EXISTS orders_order_number_index ON orders (order_number)');
-            DB::statement('CREATE INDEX IF NOT EXISTS orders_payment_status_index ON orders (payment_status)');
-            DB::statement('CREATE INDEX IF NOT EXISTS orders_production_status_index ON orders (production_status)');
-            DB::statement('CREATE INDEX IF NOT EXISTS transactions_account_id_index ON transactions (account_id)');
-            DB::statement('CREATE INDEX IF NOT EXISTS transactions_transaction_date_index ON transactions (transaction_date)');
-            DB::statement('CREATE INDEX IF NOT EXISTS transactions_order_id_index ON transactions (order_id)');
+        if (!$this->indexExists('orders', 'orders_payment_status_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('payment_status', 'orders_payment_status_index');
+            });
+        }
+
+        if (!$this->indexExists('orders', 'orders_production_status_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('production_status', 'orders_production_status_index');
+            });
+        }
+
+        // Transactions table indexes
+        if (!$this->indexExists('transactions', 'transactions_account_id_index')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->index('account_id', 'transactions_account_id_index');
+            });
+        }
+
+        if (!$this->indexExists('transactions', 'transactions_transaction_date_index')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->index('transaction_date', 'transactions_transaction_date_index');
+            });
+        }
+
+        if (!$this->indexExists('transactions', 'transactions_order_id_index')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->index('order_id', 'transactions_order_id_index');
+            });
         }
     }
 
     /**
-     * Create index if it doesn't exist (SQLite helper).
+     * Check if an index exists on a table.
      */
-    private function createIndexIfNotExists(string $table, string $column, string $indexName): void
+    private function indexExists(string $table, string $indexName): bool
     {
-        $indexes = DB::select("PRAGMA index_list('{$table}')");
-        $indexNames = array_column($indexes, 'name');
+        $driver = Schema::getConnection()->getDriverName();
 
-        if (!in_array($indexName, $indexNames)) {
-            DB::statement("CREATE INDEX {$indexName} ON {$table} ({$column})");
+        if ($driver === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list('{$table}')");
+            return in_array($indexName, array_column($indexes, 'name'));
         }
+
+        // MySQL/MariaDB
+        $indexes = DB::select("SHOW INDEX FROM {$table} WHERE Key_name = ?", [$indexName]);
+        return count($indexes) > 0;
     }
 
     /**
@@ -52,22 +74,17 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $driver = Schema::getConnection()->getDriverName();
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropIndex('orders_order_number_index');
+            $table->dropIndex('orders_payment_status_index');
+            $table->dropIndex('orders_production_status_index');
+        });
 
-        if ($driver === 'sqlite') {
-            DB::statement('DROP INDEX IF EXISTS orders_order_number_index');
-            DB::statement('DROP INDEX IF EXISTS orders_payment_status_index');
-            DB::statement('DROP INDEX IF EXISTS orders_production_status_index');
-            DB::statement('DROP INDEX IF EXISTS transactions_account_id_index');
-            DB::statement('DROP INDEX IF EXISTS transactions_transaction_date_index');
-            DB::statement('DROP INDEX IF EXISTS transactions_order_id_index');
-        } else {
-            DB::statement('DROP INDEX IF EXISTS orders_order_number_index ON orders');
-            DB::statement('DROP INDEX IF EXISTS orders_payment_status_index ON orders');
-            DB::statement('DROP INDEX IF EXISTS orders_production_status_index ON orders');
-            DB::statement('DROP INDEX IF EXISTS transactions_account_id_index ON transactions');
-            DB::statement('DROP INDEX IF EXISTS transactions_transaction_date_index ON transactions');
-            DB::statement('DROP INDEX IF EXISTS transactions_order_id_index ON transactions');
-        }
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->dropIndex('transactions_account_id_index');
+            $table->dropIndex('transactions_transaction_date_index');
+            $table->dropIndex('transactions_order_id_index');
+        });
     }
 };
+
