@@ -15,8 +15,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure intl \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
-# Fix Apache MPM conflict - disable mpm_event, enable mpm_prefork
-RUN a2dismod mpm_event && a2enmod mpm_prefork
+# Fix Apache MPM conflict - completely remove mpm_event and ensure only mpm_prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* \
+    && rm -f /etc/apache2/mods-enabled/mpm_worker.* \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
