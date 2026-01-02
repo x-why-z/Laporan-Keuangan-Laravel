@@ -18,7 +18,6 @@ php artisan migrate --force || echo "Migration completed with some errors, conti
 # Generate storage link
 php artisan storage:link 2>/dev/null || true
 
-# Start Apache
-echo "Starting Apache..."
-exec apache2-foreground
-
+# Start PHP built-in server
+echo "Starting PHP server on port 8080..."
+exec php artisan serve --host=0.0.0.0 --port=8080
