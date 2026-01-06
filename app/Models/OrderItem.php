@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
 {
@@ -24,6 +25,10 @@ class OrderItem extends Model
         'height',
         'subtotal',
         'specifications',
+        'material',
+        'finishing',
+        'binding_type',
+        'finishing_cost',
     ];
 
     protected $casts = [
@@ -32,6 +37,7 @@ class OrderItem extends Model
         'width' => 'decimal:2',
         'height' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'finishing_cost' => 'decimal:2',
     ];
 
     /**
@@ -51,6 +57,9 @@ class OrderItem extends Model
                 $areaM2 = $areaCm2 / 10000; // Convert cm² to m²
                 $subtotal = $item->quantity * $item->unit_price * $areaM2;
             }
+            
+            // Add finishing cost to subtotal
+            $subtotal += (float) ($item->finishing_cost ?? 0);
             
             $item->subtotal = $subtotal;
         });
@@ -74,5 +83,21 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get all material usages for this order item.
+     */
+    public function materialUsages(): HasMany
+    {
+        return $this->hasMany(MaterialUsage::class);
+    }
+
+    /**
+     * Calculate total HPP for this item based on material usage.
+     */
+    public function getTotalHppAttribute(): float
+    {
+        return (float) $this->materialUsages()->sum('total_cost');
     }
 }

@@ -1,0 +1,15 @@
+code,name,type,category,description
+111,Kas,asset,current_asset,Uang tunai dan saldo bank untuk operasional harian
+112,Piutang Usaha,asset,current_asset,Tagihan kepada pelanggan atas jasa cetak yang belum lunas
+113,Persediaan Bahan,asset,current_asset,Nilai stok bahan baku (kertas tinta dll) di gudang
+211,Pendapatan Diterima Dimuka,liability,current_liability,Uang muka (DP) dari pelanggan untuk pesanan yang belum selesai
+212,Hutang Usaha,liability,current_liability,Hutang kepada supplier atas pembelian bahan baku
+311,Modal Pemilik,equity,equity,Setoran modal awal dan investasi dari pemilik
+312,Laba Ditahan,equity,equity,Akumulasi laba atau rugi operasional secara otomatis
+411,Pendapatan Jasa Cetak,revenue,revenue,Pendapatan utama dari hasil penjualan jasa percetakan
+511,Beban HPP Bahan Baku,expense,direct_expense,Biaya bahan baku yang terpakai dalam produksi (COGS)
+611,Beban Gaji,expense,operational_expense,Biaya upah staf dan operator mesin
+612,Beban Listrik & Air,expense,operational_expense,Biaya utilitas workshop percetakan
+613,Beban Sewa Tempat,expense,operational_expense,Biaya sewa ruko atau workshop
+614,Beban Perlengkapan Kantor,expense,operational_expense,Biaya ATK dan kebutuhan kantor kecil lainnya
+615,Beban Pemeliharaan Mesin,expense,operational_expense,Biaya servis dan perawatan rutin mesin cetak

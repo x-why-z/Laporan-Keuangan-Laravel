@@ -14,6 +14,7 @@ class Account extends Model
         'code',
         'name',
         'type',
+        'category',
         'balance',
         'description',
         'is_active',
@@ -35,7 +36,7 @@ class Account extends Model
     /**
      * Scope for active accounts only.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
@@ -43,7 +44,7 @@ class Account extends Model
     /**
      * Scope for specific account type.
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', $type);
     }

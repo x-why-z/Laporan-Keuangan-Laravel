@@ -1,4 +1,62 @@
 <x-filament-panels::page>
+    {{-- Inline CSS for tooltips --}}
+    <style>
+        .account-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            margin-left: 6px;
+            border-radius: 50%;
+            background-color: rgba(59, 130, 246, 0.2);
+            color: rgb(59, 130, 246);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        .account-tooltip:hover {
+            background-color: rgba(59, 130, 246, 0.3);
+            transform: scale(1.1);
+        }
+        .account-tooltip .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            width: 280px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 10px 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.5;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .account-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+        .account-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+
     <div class="space-y-6">
         {{-- Header --}}
         <x-filament::section>
@@ -25,7 +83,17 @@
                     <tbody>
                         @forelse($reportData['assets'] as $asset)
                         <tr class="border-b border-gray-100 dark:border-gray-700">
-                            <td class="py-2 text-gray-600 dark:text-gray-400">{{ $asset['code'] }} - {{ $asset['name'] }}</td>
+                            <td class="py-2 text-gray-600 dark:text-gray-400">
+                                <span class="flex items-center">
+                                    {{ $asset['code'] }} - {{ $asset['name'] }}
+                                    @if(!empty($asset['tooltip']))
+                                    <span class="account-tooltip">
+                                        <span>i</span>
+                                        <span class="tooltip-text">{{ $asset['tooltip'] }}</span>
+                                    </span>
+                                    @endif
+                                </span>
+                            </td>
                             <td class="py-2 text-right text-gray-900 dark:text-white">Rp {{ number_format($asset['balance'], 0, ',', '.') }}</td>
                         </tr>
                         @empty
@@ -55,7 +123,17 @@
                             <tbody>
                                 @forelse($reportData['liabilities'] as $liability)
                                 <tr class="border-b border-gray-100 dark:border-gray-700">
-                                    <td class="py-2 text-gray-600 dark:text-gray-400">{{ $liability['code'] }} - {{ $liability['name'] }}</td>
+                                    <td class="py-2 text-gray-600 dark:text-gray-400">
+                                        <span class="flex items-center">
+                                            {{ $liability['code'] }} - {{ $liability['name'] }}
+                                            @if(!empty($liability['tooltip']))
+                                            <span class="account-tooltip">
+                                                <span>i</span>
+                                                <span class="tooltip-text">{{ $liability['tooltip'] }}</span>
+                                            </span>
+                                            @endif
+                                        </span>
+                                    </td>
                                     <td class="py-2 text-right text-gray-900 dark:text-white">Rp {{ number_format($liability['balance'], 0, ',', '.') }}</td>
                                 </tr>
                                 @empty
@@ -78,7 +156,20 @@
                             <tbody>
                                 @forelse($reportData['equity'] as $eq)
                                 <tr class="border-b border-gray-100 dark:border-gray-700">
-                                    <td class="py-2 text-gray-600 dark:text-gray-400">{{ $eq['code'] }} - {{ $eq['name'] }}</td>
+                                    <td class="py-2 text-gray-600 dark:text-gray-400">
+                                        <span class="flex items-center">
+                                            {{ $eq['code'] }} - {{ $eq['name'] }}
+                                            @if($eq['isDynamic'] ?? false)
+                                                <span class="text-xs text-blue-500 ml-1">(Otomatis)</span>
+                                            @endif
+                                            @if(!empty($eq['tooltip']))
+                                            <span class="account-tooltip">
+                                                <span>i</span>
+                                                <span class="tooltip-text">{{ $eq['tooltip'] }}</span>
+                                            </span>
+                                            @endif
+                                        </span>
+                                    </td>
                                     <td class="py-2 text-right text-gray-900 dark:text-white">Rp {{ number_format($eq['balance'], 0, ',', '.') }}</td>
                                 </tr>
                                 @empty

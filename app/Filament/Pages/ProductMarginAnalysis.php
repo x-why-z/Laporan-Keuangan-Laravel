@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\OrderItem;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -130,5 +132,35 @@ class ProductMarginAnalysis extends Page implements HasForms
     public function filter(): void
     {
         $this->generateReport();
+    }
+
+    /**
+     * Get header actions for the page.
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('generatePdfReport')
+                ->label('Generate Laporan')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    // Ensure report data is fresh
+                    $this->generateReport();
+                    
+                    $pdf = Pdf::loadView('reports.product-margin-pdf', [
+                        'data' => $this->reportData,
+                    ]);
+
+                    $pdf->setPaper('a4', 'landscape');
+
+                    $filename = 'Analisis_Margin_Produk_Mutiara_Rizki_' . now()->format('Y-m-d') . '.pdf';
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        $filename
+                    );
+                }),
+        ];
     }
 }

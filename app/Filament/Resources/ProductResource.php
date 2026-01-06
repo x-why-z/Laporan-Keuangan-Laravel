@@ -45,6 +45,15 @@ class ProductResource extends Resource
                             ->numeric()
                             ->prefix('Rp')
                             ->minValue(0),
+                        Forms\Components\Select::make('price_type')
+                            ->label('Tipe Harga')
+                            ->options([
+                                'unit' => 'Per Unit (satuan)',
+                                'area' => 'Per Area (m²)',
+                            ])
+                            ->default('unit')
+                            ->required()
+                            ->helperText('Unit: harga tetap per satuan. Area: harga berdasarkan P x L.'),
                         Forms\Components\Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(3)
@@ -66,6 +75,17 @@ class ProductResource extends Resource
                     ->label('Satuan')
                     ->badge()
                     ->color('info'),
+                Tables\Columns\BadgeColumn::make('price_type')
+                    ->label('Tipe Harga')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'unit' => 'Per Unit',
+                        'area' => 'Per Area',
+                        default => $state,
+                    })
+                    ->colors([
+                        'primary' => 'unit',
+                        'success' => 'area',
+                    ]),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Harga')
                     ->money('IDR')

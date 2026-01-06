@@ -19,6 +19,8 @@ class Order extends Model
         'status',
         'production_status',
         'total_amount',
+        'total_hpp',
+        'hpp_recorded',
         'down_payment',
         'paid_amount',
         'payment_status',
@@ -32,6 +34,8 @@ class Order extends Model
         'order_date' => 'date',
         'due_date' => 'date',
         'total_amount' => 'decimal:2',
+        'total_hpp' => 'decimal:2',
+        'hpp_recorded' => 'boolean',
         'down_payment' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'voided_at' => 'datetime',
@@ -73,6 +77,17 @@ class Order extends Model
     public function calculateTotal(): void
     {
         $this->total_amount = $this->items()->sum('subtotal');
+        $this->save();
+    }
+
+    /**
+     * Calculate and update total HPP from order items.
+     */
+    public function calculateHPP(): void
+    {
+        $this->total_hpp = $this->items->sum(function ($item) {
+            return $item->total_hpp;
+        });
         $this->save();
     }
 
@@ -150,7 +165,7 @@ class Order extends Model
     /**
      * Scope for non-voided orders.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereNull('voided_at');
     }
@@ -158,7 +173,7 @@ class Order extends Model
     /**
      * Scope for orders by payment status.
      */
-    public function scopePaymentStatus($query, string $status)
+    public function scopePaymentStatus($query, string $status): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('payment_status', $status);
     }
@@ -166,7 +181,7 @@ class Order extends Model
     /**
      * Scope for orders by production status.
      */
-    public function scopeProductionStatus($query, string $status)
+    public function scopeProductionStatus($query, string $status): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('production_status', $status);
     }

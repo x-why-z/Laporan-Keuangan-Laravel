@@ -5,6 +5,8 @@ namespace App\Filament\Pages;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Services\AccountingService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -123,5 +125,35 @@ class ProfitLossReport extends Page implements HasForms
     public function filter(): void
     {
         $this->generateReport();
+    }
+
+    /**
+     * Get header actions for the page.
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('generatePdfReport')
+                ->label('Generate Laporan')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    // Ensure report data is fresh
+                    $this->generateReport();
+                    
+                    $pdf = Pdf::loadView('reports.profit-loss-pdf', [
+                        'data' => $this->reportData,
+                    ]);
+
+                    $pdf->setPaper('a4', 'portrait');
+
+                    $filename = 'Laporan_Laba_Rugi_Mutiara_Rizki_' . now()->format('Y-m-d') . '.pdf';
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        $filename
+                    );
+                }),
+        ];
     }
 }

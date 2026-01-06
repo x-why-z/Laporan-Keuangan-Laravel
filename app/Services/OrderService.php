@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\Customer;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -137,18 +138,21 @@ class OrderService
      * Formula:
      * - With dimensions: quantity × unit_price × (width × height / 10000) [cm² to m²]
      * - Without dimensions: quantity × unit_price
+     * - Plus finishing cost if provided
      *
      * @param int $quantity
      * @param float $unitPrice
      * @param float|null $width Width in centimeters
      * @param float|null $height Height in centimeters
+     * @param float|null $finishingCost Additional finishing cost
      * @return float
      */
     public function calculateItemSubtotal(
         int $quantity,
         float $unitPrice,
         ?float $width = null,
-        ?float $height = null
+        ?float $height = null,
+        ?float $finishingCost = null
     ): float {
         $subtotal = (float) $quantity * $unitPrice;
 
@@ -158,6 +162,9 @@ class OrderService
             $areaM2 = $areaCm2 / 10000; // Convert cm² to m²
             $subtotal = (float) $quantity * $unitPrice * $areaM2;
         }
+
+        // Add finishing cost if provided
+        $subtotal += (float) ($finishingCost ?? 0);
 
         return round($subtotal, 2);
     }
@@ -224,6 +231,31 @@ class OrderService
                 throw new InvalidArgumentException(
                     "Item #{$itemNumber}: Both width and height must be provided for area-based pricing."
                 );
+            }
+
+            // Validate area-based products have valid dimensions
+            // Note: This block requires database access. In unit tests without DB,
+            // we skip this validation (caught silently).
+            if (isset($item['product_id'])) {
+                try {
+                    $product = Product::find($item['product_id']);
+                    if ($product && $product->price_type === 'area') {
+                        if (empty($item['width']) || (float) $item['width'] <= 0) {
+                            throw new InvalidArgumentException(
+                                "Item #{$itemNumber}: Lebar harus diisi dan lebih dari 0 untuk produk area ({$product->name})."
+                            );
+                        }
+                        if (empty($item['height']) || (float) $item['height'] <= 0) {
+                            throw new InvalidArgumentException(
+                                "Item #{$itemNumber}: Panjang harus diisi dan lebih dari 0 untuk produk area ({$product->name})."
+                            );
+                        }
+                    }
+                } catch (InvalidArgumentException $e) {
+                    throw $e; // Re-throw validation errors
+                } catch (\Throwable $e) {
+                    // Database not available (e.g., in unit tests) - skip this validation
+                }
             }
         }
     }

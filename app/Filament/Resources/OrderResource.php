@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Customer;
+use App\Models\Material;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\AccountingService;
@@ -34,10 +35,11 @@ class OrderResource extends Resource
 
     /**
      * Static cache for products to prevent N+1 queries in repeater.
-     * Now includes prices for fast lookup.
+     * Now includes prices and price_types for fast lookup.
      */
     protected static array $cachedProducts = [];
     protected static array $cachedProductPrices = [];
+    protected static array $cachedProductPriceTypes = [];
 
     /**
      * Get cached products for select options.
@@ -45,9 +47,10 @@ class OrderResource extends Resource
     protected static function getCachedProducts(): array
     {
         if (empty(self::$cachedProducts)) {
-            $products = Product::select('id', 'name', 'price')->get();
+            $products = Product::select('id', 'name', 'price', 'price_type')->get();
             self::$cachedProducts = $products->pluck('name', 'id')->toArray();
             self::$cachedProductPrices = $products->pluck('price', 'id')->toArray();
+            self::$cachedProductPriceTypes = $products->pluck('price_type', 'id')->toArray();
         }
         return self::$cachedProducts;
     }
@@ -58,7 +61,17 @@ class OrderResource extends Resource
     protected static function getCachedProductPrice(int $productId): ?float
     {
         self::getCachedProducts(); // Ensure cache is populated
-        return self::$cachedProductPrices[$productId] ?? null;
+        $price = self::$cachedProductPrices[$productId] ?? null;
+        return $price !== null ? (float) $price : null;
+    }
+
+    /**
+     * Get cached product price_type by ID.
+     */
+    protected static function getCachedProductPriceType(int $productId): ?string
+    {
+        self::getCachedProducts(); // Ensure cache is populated
+        return self::$cachedProductPriceTypes[$productId] ?? 'unit';
     }
 
     /**
@@ -67,7 +80,7 @@ class OrderResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['customer', 'items']);
+            ->with(['customer', 'items.materialUsages.material']);
     }
 
     public static function form(Form $form): Form
@@ -149,37 +162,152 @@ class OrderResource extends Resource
                                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                                 if ($state) {
                                                     $price = self::getCachedProductPrice((int) $state);
+                                                    $priceType = self::getCachedProductPriceType((int) $state);
                                                     if ($price !== null) {
                                                         $set('unit_price', $price);
+                                                    }
+                                                    $set('temp_price_type', $priceType ?? 'unit');
+                                                    // Clear dimensions when switching to unit-based product
+                                                    if ($priceType === 'unit') {
+                                                        $set('width', null);
+                                                        $set('height', null);
                                                     }
                                                 }
                                             })
                                             ->columnSpan(2),
+                                        Forms\Components\Hidden::make('temp_price_type')
+                                            ->default('unit')
+                                            ->dehydrated(false),
                                         Forms\Components\TextInput::make('quantity')
                                             ->label('Qty')
                                             ->numeric()
                                             ->required()
                                             ->default(1)
-                                            ->minValue(1),
+                                            ->minValue(1)
+                                            ->live(debounce: 500),
                                         Forms\Components\TextInput::make('unit_price')
                                             ->label('Harga Satuan')
                                             ->numeric()
                                             ->required()
-                                            ->prefix('Rp'),
+                                            ->prefix('Rp')
+                                            ->columnSpan(2)
+                                            ->live(debounce: 500),
                                         Forms\Components\TextInput::make('width')
                                             ->label('Lebar (cm)')
                                             ->numeric()
-                                            ->minValue(0)
-                                            ->nullable(),
+                                            ->minValue(0.01)
+                                            ->visible(fn (Get $get) => $get('temp_price_type') === 'area')
+                                            ->required(fn (Get $get) => $get('temp_price_type') === 'area')
+                                            ->live(debounce: 500)
+                                            ->helperText('Wajib untuk produk area'),
                                         Forms\Components\TextInput::make('height')
                                             ->label('Panjang (cm)')
                                             ->numeric()
-                                            ->minValue(0)
-                                            ->nullable(),
+                                            ->minValue(0.01)
+                                            ->visible(fn (Get $get) => $get('temp_price_type') === 'area')
+                                            ->required(fn (Get $get) => $get('temp_price_type') === 'area')
+                                            ->live(debounce: 500)
+                                            ->helperText('Wajib untuk produk area'),
                                         Forms\Components\Textarea::make('specifications')
                                             ->label('Spesifikasi')
                                             ->rows(1)
                                             ->columnSpan(2),
+                                        Forms\Components\TextInput::make('material')
+                                            ->label('Bahan')
+                                            ->placeholder('Art Paper, HVS, dll')
+                                            ->maxLength(100),
+                                        Forms\Components\TextInput::make('finishing')
+                                            ->label('Finishing')
+                                            ->placeholder('Laminasi, Spot UV, dll')
+                                            ->maxLength(100),
+                                        Forms\Components\Select::make('binding_type')
+                                            ->label('Jilid')
+                                            ->options([
+                                                'hardcover' => 'Hardcover',
+                                                'softcover' => 'Softcover',
+                                                'spiral' => 'Spiral',
+                                                'staples' => 'Staples',
+                                                'perfect_binding' => 'Perfect Binding',
+                                            ])
+                                            ->placeholder('Pilih jilid...'),
+                                        Forms\Components\TextInput::make('finishing_cost')
+                                            ->label('Biaya Finishing')
+                                            ->numeric()
+                                            ->prefix('Rp')
+                                            ->default(0)
+                                            ->live(debounce: 500)
+                                            ->helperText('Biaya tambahan finishing'),
+                                        Forms\Components\Placeholder::make('subtotal_preview')
+                                            ->label('Subtotal')
+                                            ->content(function (Get $get) {
+                                                $quantity = (int) ($get('quantity') ?? 0);
+                                                $unitPrice = (float) ($get('unit_price') ?? 0);
+                                                $finishingCost = (float) ($get('finishing_cost') ?? 0);
+                                                $priceType = $get('temp_price_type') ?? 'unit';
+                                                
+                                                if ($priceType === 'area') {
+                                                    $width = (float) ($get('width') ?? 0);
+                                                    $height = (float) ($get('height') ?? 0);
+                                                    $areaM2 = ($width * $height) / 10000;
+                                                    $subtotal = $quantity * $unitPrice * $areaM2 + $finishingCost;
+                                                } else {
+                                                    $subtotal = $quantity * $unitPrice + $finishingCost;
+                                                }
+                                                
+                                                return 'Rp ' . number_format($subtotal, 0, ',', '.');
+                                            })
+                                            ->columnSpan(2),
+                                        
+                                        // Material Usage for HPP Calculation
+                                        Forms\Components\Section::make('Pemakaian Bahan (HPP)')
+                                            ->schema([
+                                                Forms\Components\Repeater::make('materialUsages')
+                                                    ->relationship()
+                                                    ->label('')
+                                                    ->schema([
+                                                        Forms\Components\Select::make('material_id')
+                                                            ->label('Bahan')
+                                                            ->options(Material::active()->pluck('name', 'id'))
+                                                            ->searchable()
+                                                            ->required()
+                                                            ->live()
+                                                            ->afterStateUpdated(function (Set $set, $state) {
+                                                                if ($state) {
+                                                                    $material = Material::find($state);
+                                                                    if ($material) {
+                                                                        $set('cost_per_unit', $material->cost_per_unit);
+                                                                    }
+                                                                }
+                                                            })
+                                                            ->columnSpan(2),
+                                                        Forms\Components\TextInput::make('quantity_used')
+                                                            ->label('Jumlah')
+                                                            ->numeric()
+                                                            ->required()
+                                                            ->minValue(0.01)
+                                                            ->live(debounce: 500),
+                                                        Forms\Components\TextInput::make('cost_per_unit')
+                                                            ->label('Harga/Unit')
+                                                            ->numeric()
+                                                            ->prefix('Rp')
+                                                            ->disabled()
+                                                            ->dehydrated(true),
+                                                        Forms\Components\Placeholder::make('hpp_preview')
+                                                            ->label('HPP')
+                                                            ->content(fn (Get $get) => 'Rp ' . number_format(
+                                                                ((float) ($get('quantity_used') ?? 0)) * ((float) ($get('cost_per_unit') ?? 0)),
+                                                                0, ',', '.'
+                                                            )),
+                                                    ])
+                                                    ->columns(5)
+                                                    ->defaultItems(0)
+                                                    ->addActionLabel('+ Tambah Bahan')
+                                                    ->collapsible()
+                                                    ->collapsed(),
+                                            ])
+                                            ->columnSpanFull()
+                                            ->collapsible()
+                                            ->collapsed(),
                                     ])
                                     ->columns(6)
                                     ->defaultItems(1)
@@ -195,17 +323,70 @@ class OrderResource extends Resource
                     ->schema([
                         Forms\Components\Section::make('Pembayaran')
                             ->schema([
+                                Forms\Components\Placeholder::make('total_biaya_display')
+                                    ->label('Total Biaya')
+                                    ->content(function (Get $get, ?Order $record) {
+                                        // For existing records, use saved value; for new/editing, calculate from items
+                                        $items = $get('items') ?? [];
+                                        if (empty($items) && $record) {
+                                            return 'Rp ' . number_format($record->total_amount, 0, ',', '.');
+                                        }
+                                        
+                                        $total = collect($items)->sum(function ($item) {
+                                            $quantity = (int) ($item['quantity'] ?? 0);
+                                            $unitPrice = (float) ($item['unit_price'] ?? 0);
+                                            $finishingCost = (float) ($item['finishing_cost'] ?? 0);
+                                            $width = (float) ($item['width'] ?? 0);
+                                            $height = (float) ($item['height'] ?? 0);
+                                            
+                                            // Check if area-based pricing
+                                            if ($width > 0 && $height > 0) {
+                                                $areaM2 = ($width * $height) / 10000;
+                                                return $quantity * $unitPrice * $areaM2 + $finishingCost;
+                                            }
+                                            return $quantity * $unitPrice + $finishingCost;
+                                        });
+                                        
+                                        return 'Rp ' . number_format($total, 0, ',', '.');
+                                    }),
                                 Forms\Components\TextInput::make('down_payment')
                                     ->label('Uang Muka (DP)')
                                     ->numeric()
                                     ->prefix('Rp')
-                                    ->default(0),
+                                    ->default(0)
+                                    ->live(onBlur: true)
+                                    ->helperText('Masukkan jumlah DP jika ada'),
                                 Forms\Components\Placeholder::make('paid_amount_display')
                                     ->label('Total Dibayar')
                                     ->content(fn (?Order $record): string => $record ? 'Rp ' . number_format($record->paid_amount, 0, ',', '.') : 'Rp 0'),
-                                Forms\Components\Placeholder::make('remaining_display')
+                                Forms\Components\Placeholder::make('sisa_bayar_display')
                                     ->label('Sisa Bayar')
-                                    ->content(fn (?Order $record): string => $record ? 'Rp ' . number_format($record->remaining_amount, 0, ',', '.') : 'Rp 0'),
+                                    ->content(function (Get $get, ?Order $record) {
+                                        // Calculate total from items
+                                        $items = $get('items') ?? [];
+                                        $paidAmount = $record ? (float) $record->paid_amount : 0;
+                                        
+                                        if (empty($items) && $record) {
+                                            $total = (float) $record->total_amount;
+                                        } else {
+                                            $total = collect($items)->sum(function ($item) {
+                                                $quantity = (int) ($item['quantity'] ?? 0);
+                                                $unitPrice = (float) ($item['unit_price'] ?? 0);
+                                                $finishingCost = (float) ($item['finishing_cost'] ?? 0);
+                                                $width = (float) ($item['width'] ?? 0);
+                                                $height = (float) ($item['height'] ?? 0);
+                                                
+                                                if ($width > 0 && $height > 0) {
+                                                    $areaM2 = ($width * $height) / 10000;
+                                                    return $quantity * $unitPrice * $areaM2 + $finishingCost;
+                                                }
+                                                return $quantity * $unitPrice + $finishingCost;
+                                            });
+                                        }
+                                        
+                                        $remaining = max(0, $total - $paidAmount);
+                                        return 'Rp ' . number_format($remaining, 0, ',', '.');
+                                    }),
                                 Forms\Components\Select::make('payment_status')
                                     ->label('Status Pembayaran')
                                     ->options([
@@ -228,7 +409,29 @@ class OrderResource extends Resource
                             ->schema([
                                 Forms\Components\Placeholder::make('total_amount_display')
                                     ->label('Total')
-                                    ->content(fn (?Order $record): string => $record ? 'Rp ' . number_format($record->total_amount, 0, ',', '.') : 'Rp 0'),
+                                    ->content(function (Get $get, ?Order $record) {
+                                        // Same logic as total_biaya_display for consistency
+                                        $items = $get('items') ?? [];
+                                        if (empty($items) && $record) {
+                                            return 'Rp ' . number_format($record->total_amount, 0, ',', '.');
+                                        }
+                                        
+                                        $total = collect($items)->sum(function ($item) {
+                                            $quantity = (int) ($item['quantity'] ?? 0);
+                                            $unitPrice = (float) ($item['unit_price'] ?? 0);
+                                            $finishingCost = (float) ($item['finishing_cost'] ?? 0);
+                                            $width = (float) ($item['width'] ?? 0);
+                                            $height = (float) ($item['height'] ?? 0);
+                                            
+                                            if ($width > 0 && $height > 0) {
+                                                $areaM2 = ($width * $height) / 10000;
+                                                return $quantity * $unitPrice * $areaM2 + $finishingCost;
+                                            }
+                                            return $quantity * $unitPrice + $finishingCost;
+                                        });
+                                        
+                                        return 'Rp ' . number_format($total, 0, ',', '.');
+                                    }),
                             ]),
                     ])
                     ->columnSpan(['lg' => 1]),

@@ -14,11 +14,13 @@ class Product extends Model
         'name',
         'unit',
         'price',
+        'price_type',
         'description',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'price_type' => 'string',
     ];
 
     /**

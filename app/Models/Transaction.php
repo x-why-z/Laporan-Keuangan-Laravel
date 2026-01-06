@@ -52,15 +52,10 @@ class Transaction extends Model
     {
         $prefix = 'JRN';
         $date = now()->format('Ymd');
-        $lastTransaction = self::whereDate('created_at', today())
-            ->orderBy('id', 'desc')
-            ->first();
+        $time = now()->format('His');
+        $random = strtoupper(substr(uniqid(), -4));
 
-        $sequence = $lastTransaction 
-            ? (int) substr($lastTransaction->reference_number, -4) + 1 
-            : 1;
-
-        return $prefix . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return $prefix . $date . $time . $random;
     }
 
     /**
@@ -90,7 +85,7 @@ class Transaction extends Model
     /**
      * Scope for non-voided transactions.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_void', false);
     }
@@ -98,7 +93,7 @@ class Transaction extends Model
     /**
      * Scope for transactions within date range.
      */
-    public function scopeDateRange($query, $startDate, $endDate)
+    public function scopeDateRange($query, $startDate, $endDate): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereBetween('transaction_date', [$startDate, $endDate]);
     }
@@ -106,7 +101,7 @@ class Transaction extends Model
     /**
      * Scope for debit transactions.
      */
-    public function scopeDebits($query)
+    public function scopeDebits($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', 'debit');
     }
@@ -114,7 +109,7 @@ class Transaction extends Model
     /**
      * Scope for credit transactions.
      */
-    public function scopeCredits($query)
+    public function scopeCredits($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', 'credit');
     }
