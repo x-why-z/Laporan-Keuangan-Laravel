@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rangkuman Aplikasi Sistem Informasi Percetakan</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        @media print {
+            body { font-size: 11pt; }
+            h1 { page-break-before: avoid; }
+            table { page-break-inside: avoid; }
+            .no-print { display: none; }
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 { font-size: 18pt; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { font-size: 14pt; margin-top: 25px; border-bottom: 1px solid #666; padding-bottom: 5px; }
+        h3 { font-size: 12pt; margin-top: 20px; }
+        h4 { font-size: 11pt; margin-top: 15px; font-style: italic; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10pt; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; font-weight: bold; }
+        .center { text-align: center; }
+        .code { font-family: 'Courier New', monospace; background: #f5f5f5; padding: 2px 5px; font-size: 9pt; }
+        .diagram-box { border: 1px solid #999; padding: 15px; margin: 15px 0; background: #fafafa; }
+        .diagram-title { font-weight: bold; margin-bottom: 10px; }
+        .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+        .flow-item { background: #e3f2fd; border: 1px solid #1976d2; padding: 5px 10px; border-radius: 5px; }
+        .flow-arrow { font-weight: bold; color: #666; }
+        ul, ol { margin: 10px 0; padding-left: 25px; }
+        .print-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .print-btn:hover { background: #1565c0; }
+    </style>
+</head>
+<body>
+    <button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+
+    <h1>RANGKUMAN APLIKASI<br>SISTEM INFORMASI PERCETAKAN RUMAHAN</h1>
+    
+    <p style="text-align: center; font-style: italic;">Dokumen ini merangkum keseluruhan alur dan skema aplikasi untuk keperluan pembuatan ERD, Use Case Diagram, Activity Diagram, dan Sequence Diagram.</p>
+
+    <h2>1. Entity Relationship Diagram (ERD)</h2>
+    
+    <h3>1.1 Daftar Entitas (Tabel Database)</h3>
+    <table>
+        <tr><th>No</th><th>Entitas</th><th>Deskripsi</th></tr>
+        <tr><td>1</td><td class="code">users</td><td>Pengguna sistem (Admin/Owner)</td></tr>
+        <tr><td>2</td><td class="code">roles</td><td>Peran pengguna</td></tr>
+        <tr><td>3</td><td class="code">role_user</td><td>Pivot table untuk relasi User-Role (Many-to-Many)</td></tr>
+        <tr><td>4</td><td class="code">customers</td><td>Data pelanggan</td></tr>
+        <tr><td>5</td><td class="code">products</td><td>Katalog produk/jasa cetak</td></tr>
+        <tr><td>6</td><td class="code">orders</td><td>Pesanan dari pelanggan</td></tr>
+        <tr><td>7</td><td class="code">order_items</td><td>Detail item dalam pesanan</td></tr>
+        <tr><td>8</td><td class="code">materials</td><td>Bahan baku (kertas, tinta, dll)</td></tr>
+        <tr><td>9</td><td class="code">material_usage</td><td>Pemakaian bahan per order item</td></tr>
+        <tr><td>10</td><td class="code">inventory_logs</td><td>Riwayat keluar-masuk stok</td></tr>
+        <tr><td>11</td><td class="code">accounts</td><td>Chart of Accounts (akun akuntansi)</td></tr>
+        <tr><td>12</td><td class="code">transactions</td><td>Jurnal transaksi akuntansi</td></tr>
+    </table>
+
+    <h3>1.2 Struktur Atribut per Entitas</h3>
+    
+    <h4>Tabel: users</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama pengguna</td></tr>
+        <tr><td>email</td><td>VARCHAR</td><td>Email (unique)</td></tr>
+        <tr><td>password</td><td>VARCHAR</td><td>Password (hashed)</td></tr>
+        <tr><td>created_at, updated_at</td><td>TIMESTAMP</td><td>Waktu dibuat/diupdate</td></tr>
+    </table>
+
+    <h4>Tabel: roles</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama role (admin/owner)</td></tr>
+        <tr><td>guard_name</td><td>VARCHAR</td><td>Guard name</td></tr>
+    </table>
+
+    <h4>Tabel: customers</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama pelanggan</td></tr>
+        <tr><td>phone</td><td>VARCHAR</td><td>Nomor telepon</td></tr>
+        <tr><td>address</td><td>TEXT</td><td>Alamat</td></tr>
+    </table>
+
+    <h4>Tabel: products</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama produk</td></tr>
+        <tr><td>unit</td><td>VARCHAR</td><td>Satuan (pcs, lembar, m²)</td></tr>
+        <tr><td>price</td><td>DECIMAL</td><td>Harga satuan</td></tr>
+        <tr><td>price_type</td><td>ENUM</td><td>Tipe harga ('fixed', 'per_area')</td></tr>
+        <tr><td>description</td><td>TEXT</td><td>Deskripsi produk</td></tr>
+    </table>
+
+    <h4>Tabel: orders</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>order_number</td><td>VARCHAR</td><td>Nomor pesanan (auto: ORD+YYYYMMDD+NNNN)</td></tr>
+        <tr><td>customer_id</td><td>BIGINT FK</td><td>Referensi ke customers</td></tr>
+        <tr><td>order_date</td><td>DATE</td><td>Tanggal pesanan</td></tr>
+        <tr><td>due_date</td><td>DATE</td><td>Tanggal jatuh tempo</td></tr>
+        <tr><td>production_status</td><td>ENUM</td><td>Status produksi (pending/in_progress/completed)</td></tr>
+        <tr><td>total_amount</td><td>DECIMAL</td><td>Total nilai pesanan</td></tr>
+        <tr><td>total_hpp</td><td>DECIMAL</td><td>Total HPP (Harga Pokok Penjualan)</td></tr>
+        <tr><td>hpp_recorded</td><td>BOOLEAN</td><td>Apakah HPP sudah dicatat</td></tr>
+        <tr><td>down_payment</td><td>DECIMAL</td><td>Uang muka (DP)</td></tr>
+        <tr><td>paid_amount</td><td>DECIMAL</td><td>Total yang sudah dibayar</td></tr>
+        <tr><td>payment_status</td><td>ENUM</td><td>Status pembayaran (unpaid/partial/paid)</td></tr>
+        <tr><td>notes</td><td>TEXT</td><td>Catatan pesanan</td></tr>
+        <tr><td>voided_at</td><td>TIMESTAMP</td><td>Waktu pembatalan</td></tr>
+        <tr><td>voided_by</td><td>BIGINT FK</td><td>User yang membatalkan</td></tr>
+        <tr><td>void_reason</td><td>TEXT</td><td>Alasan pembatalan</td></tr>
+    </table>
+
+    <h4>Tabel: order_items</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>order_id</td><td>BIGINT FK</td><td>Referensi ke orders</td></tr>
+        <tr><td>product_id</td><td>BIGINT FK</td><td>Referensi ke products</td></tr>
+        <tr><td>quantity</td><td>INT</td><td>Jumlah</td></tr>
+        <tr><td>unit_price</td><td>DECIMAL</td><td>Harga satuan</td></tr>
+        <tr><td>width, height</td><td>DECIMAL</td><td>Lebar dan Tinggi (cm)</td></tr>
+        <tr><td>subtotal</td><td>DECIMAL</td><td>Subtotal (auto-calculated)</td></tr>
+        <tr><td>specifications</td><td>TEXT</td><td>Spesifikasi khusus</td></tr>
+        <tr><td>finishing_cost</td><td>DECIMAL</td><td>Biaya finishing tambahan</td></tr>
+    </table>
+
+    <h4>Tabel: materials</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama bahan</td></tr>
+        <tr><td>unit</td><td>VARCHAR</td><td>Satuan</td></tr>
+        <tr><td>cost_per_unit</td><td>DECIMAL</td><td>Biaya per satuan</td></tr>
+        <tr><td>stock_quantity</td><td>DECIMAL</td><td>Stok saat ini</td></tr>
+        <tr><td>min_stock</td><td>DECIMAL</td><td>Stok minimum</td></tr>
+        <tr><td>is_active</td><td>BOOLEAN</td><td>Status aktif</td></tr>
+    </table>
+
+    <h4>Tabel: material_usage</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>order_item_id</td><td>BIGINT FK</td><td>Referensi ke order_items</td></tr>
+        <tr><td>material_id</td><td>BIGINT FK</td><td>Referensi ke materials</td></tr>
+        <tr><td>quantity_used</td><td>DECIMAL</td><td>Jumlah yang dipakai</td></tr>
+        <tr><td>cost_per_unit</td><td>DECIMAL</td><td>Biaya per satuan saat pemakaian</td></tr>
+        <tr><td>total_cost</td><td>DECIMAL</td><td>Total biaya (auto-calculated)</td></tr>
+    </table>
+
+    <h4>Tabel: inventory_logs</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>material_id</td><td>BIGINT FK</td><td>Referensi ke materials</td></tr>
+        <tr><td>type</td><td>ENUM</td><td>Tipe (in/out)</td></tr>
+        <tr><td>quantity</td><td>DECIMAL</td><td>Jumlah</td></tr>
+        <tr><td>cost_per_unit</td><td>DECIMAL</td><td>Biaya per satuan</td></tr>
+        <tr><td>reference_type</td><td>VARCHAR</td><td>Tipe referensi (purchase/order_item/adjustment)</td></tr>
+        <tr><td>reference_id</td><td>BIGINT</td><td>ID referensi</td></tr>
+        <tr><td>description</td><td>TEXT</td><td>Deskripsi</td></tr>
+        <tr><td>user_id</td><td>BIGINT FK</td><td>User yang melakukan</td></tr>
+    </table>
+
+    <h4>Tabel: accounts</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>code</td><td>VARCHAR</td><td>Kode akun (111, 112, dst)</td></tr>
+        <tr><td>name</td><td>VARCHAR</td><td>Nama akun</td></tr>
+        <tr><td>type</td><td>ENUM</td><td>Tipe (asset/liability/equity/revenue/expense)</td></tr>
+        <tr><td>category</td><td>VARCHAR</td><td>Kategori (current_asset, dll)</td></tr>
+        <tr><td>balance</td><td>DECIMAL</td><td>Saldo saat ini</td></tr>
+        <tr><td>is_active</td><td>BOOLEAN</td><td>Status aktif</td></tr>
+    </table>
+
+    <h4>Tabel: transactions</h4>
+    <table>
+        <tr><th>Atribut</th><th>Tipe</th><th>Keterangan</th></tr>
+        <tr><td>id</td><td>BIGINT PK</td><td>Auto increment</td></tr>
+        <tr><td>reference_number</td><td>VARCHAR</td><td>Nomor referensi (auto: JRN+timestamp)</td></tr>
+        <tr><td>order_id</td><td>BIGINT FK</td><td>Referensi ke orders (nullable)</td></tr>
+        <tr><td>account_id</td><td>BIGINT FK</td><td>Referensi ke accounts</td></tr>
+        <tr><td>type</td><td>ENUM</td><td>Tipe (debit/credit)</td></tr>
+        <tr><td>amount</td><td>DECIMAL</td><td>Jumlah</td></tr>
+        <tr><td>description</td><td>TEXT</td><td>Deskripsi</td></tr>
+        <tr><td>transaction_date</td><td>DATE</td><td>Tanggal transaksi</td></tr>
+        <tr><td>is_void</td><td>BOOLEAN</td><td>Status void</td></tr>
+        <tr><td>voided_by</td><td>BIGINT FK</td><td>User yang void</td></tr>
+        <tr><td>void_reason</td><td>TEXT</td><td>Alasan void</td></tr>
+    </table>
+
+    <h3>1.3 Relasi Antar Entitas</h3>
+    <div class="diagram-box">
+        <div class="diagram-title">Diagram Relasi:</div>
+        <ul>
+            <li><strong>users</strong> ↔ <strong>roles</strong> : Many-to-Many (melalui role_user)</li>
+            <li><strong>customers</strong> → <strong>orders</strong> : One-to-Many</li>
+            <li><strong>orders</strong> → <strong>order_items</strong> : One-to-Many</li>
+            <li><strong>products</strong> → <strong>order_items</strong> : One-to-Many</li>
+            <li><strong>orders</strong> → <strong>transactions</strong> : One-to-Many</li>
+            <li><strong>accounts</strong> → <strong>transactions</strong> : One-to-Many</li>
+            <li><strong>order_items</strong> → <strong>material_usage</strong> : One-to-Many</li>
+            <li><strong>materials</strong> → <strong>material_usage</strong> : One-to-Many</li>
+            <li><strong>materials</strong> → <strong>inventory_logs</strong> : One-to-Many</li>
+            <li><strong>users</strong> → <strong>inventory_logs</strong> : One-to-Many</li>
+            <li><strong>users</strong> → <strong>orders</strong> (voided_by) : One-to-Many</li>
+        </ul>
+    </div>
+
+    <h2>2. Chart of Accounts (COA)</h2>
+    <table>
+        <tr><th>Kode</th><th>Nama Akun</th><th>Tipe</th><th>Kategori</th></tr>
+        <tr><td>111</td><td>Kas</td><td>Asset</td><td>Current Asset</td></tr>
+        <tr><td>112</td><td>Piutang Usaha</td><td>Asset</td><td>Current Asset</td></tr>
+        <tr><td>113</td><td>Persediaan Bahan</td><td>Asset</td><td>Current Asset</td></tr>
+        <tr><td>211</td><td>Pendapatan Diterima Dimuka</td><td>Liability</td><td>Current Liability</td></tr>
+        <tr><td>212</td><td>Hutang Usaha</td><td>Liability</td><td>Current Liability</td></tr>
+        <tr><td>311</td><td>Modal Pemilik</td><td>Equity</td><td>Equity</td></tr>
+        <tr><td>312</td><td>Laba Ditahan</td><td>Equity</td><td>Equity (Dynamic)</td></tr>
+        <tr><td>411</td><td>Pendapatan Jasa Cetak</td><td>Revenue</td><td>Revenue</td></tr>
+        <tr><td>511</td><td>Beban HPP Bahan Baku</td><td>Expense</td><td>Direct Expense</td></tr>
+        <tr><td>611</td><td>Beban Gaji</td><td>Expense</td><td>Operational Expense</td></tr>
+        <tr><td>612</td><td>Beban Listrik & Air</td><td>Expense</td><td>Operational Expense</td></tr>
+        <tr><td>613</td><td>Beban Sewa Tempat</td><td>Expense</td><td>Operational Expense</td></tr>
+        <tr><td>614</td><td>Beban Perlengkapan Kantor</td><td>Expense</td><td>Operational Expense</td></tr>
+        <tr><td>615</td><td>Beban Pemeliharaan Mesin</td><td>Expense</td><td>Operational Expense</td></tr>
+    </table>
+
+    <h2>3. Use Case Diagram</h2>
+    
+    <h3>3.1 Aktor</h3>
+    <table>
+        <tr><th>Aktor</th><th>Deskripsi</th></tr>
+        <tr><td><strong>Owner</strong></td><td>Pemilik usaha dengan akses penuh ke semua fitur</td></tr>
+        <tr><td><strong>Admin</strong></td><td>Staf administrasi dengan akses terbatas</td></tr>
+    </table>
+
+    <h3>3.2 Daftar Use Cases</h3>
+    <table>
+        <tr><th>No</th><th>Use Case</th><th>Aktor</th><th>Deskripsi</th></tr>
+        <tr><td>UC1</td><td>Kelola Produk</td><td>Owner, Admin</td><td>CRUD katalog produk/jasa cetak</td></tr>
+        <tr><td>UC2</td><td>Kelola Pelanggan</td><td>Owner, Admin</td><td>CRUD data pelanggan</td></tr>
+        <tr><td>UC3</td><td>Kelola Material</td><td>Owner</td><td>CRUD data bahan baku</td></tr>
+        <tr><td>UC4</td><td>Buat Pesanan</td><td>Owner, Admin</td><td>Input pesanan baru dengan item detail</td></tr>
+        <tr><td>UC5</td><td>Lihat Pesanan</td><td>Owner, Admin</td><td>Melihat daftar dan detail pesanan</td></tr>
+        <tr><td>UC6</td><td>Update Status Produksi</td><td>Owner, Admin</td><td>Mengubah status produksi pesanan</td></tr>
+        <tr><td>UC7</td><td>Terima DP</td><td>Owner, Admin</td><td>Mencatat penerimaan uang muka</td></tr>
+        <tr><td>UC8</td><td>Terima Pelunasan</td><td>Owner, Admin</td><td>Mencatat pelunasan pembayaran</td></tr>
+        <tr><td>UC9</td><td>Batalkan Pesanan</td><td>Owner</td><td>Membatalkan pesanan dan void jurnal</td></tr>
+        <tr><td>UC10</td><td>Lihat Stok</td><td>Owner, Admin</td><td>Melihat stok bahan baku saat ini</td></tr>
+        <tr><td>UC11</td><td>Input Pembelian Bahan</td><td>Owner</td><td>Mencatat pembelian bahan baku</td></tr>
+        <tr><td>UC12</td><td>Catat Pemakaian Bahan</td><td>Owner</td><td>Mencatat pemakaian bahan untuk pesanan</td></tr>
+        <tr><td>UC13</td><td>Riwayat Stok</td><td>Owner, Admin</td><td>Melihat log keluar-masuk stok</td></tr>
+        <tr><td>UC14</td><td>Lihat Neraca</td><td>Owner</td><td>Laporan posisi keuangan</td></tr>
+        <tr><td>UC15</td><td>Lihat Laba Rugi</td><td>Owner</td><td>Laporan pendapatan vs biaya</td></tr>
+        <tr><td>UC16</td><td>Lihat Analisis Margin</td><td>Owner</td><td>Laporan margin per produk</td></tr>
+        <tr><td>UC17</td><td>Lihat Rekap Laporan</td><td>Owner, Admin</td><td>Ringkasan laporan dengan filter tanggal</td></tr>
+        <tr><td>UC18</td><td>Export Laporan</td><td>Owner</td><td>Download PDF/CSV laporan</td></tr>
+    </table>
+
+    <h2>4. Activity Diagram</h2>
+
+    <h3>4.1 Alur Pembuatan Pesanan Baru</h3>
+    <div class="diagram-box">
+        <ol>
+            <li>Admin/Owner Login ke sistem</li>
+            <li>Buka Menu Order</li>
+            <li>Klik "Buat Pesanan Baru"</li>
+            <li>Pilih Pelanggan (atau tambah baru jika belum ada)</li>
+            <li>Input Tanggal Pesanan dan Jatuh Tempo</li>
+            <li>Tambah Item Pesanan:
+                <ul>
+                    <li>Pilih Produk</li>
+                    <li>Input Quantity</li>
+                    <li>Jika produk per area: Input ukuran (W x H)</li>
+                    <li>Sistem auto-hitung Subtotal</li>
+                </ul>
+            </li>
+            <li>Ulangi langkah 6 untuk item lainnya</li>
+            <li>Review Total Pesanan</li>
+            <li>Opsional: Input jumlah DP → Sistem auto jurnal DP</li>
+            <li>Simpan Pesanan → Generate Nomor Pesanan otomatis</li>
+        </ol>
+    </div>
+
+    <h3>4.2 Alur Proses Pembayaran</h3>
+    <div class="diagram-box">
+        <ol>
+            <li>Pilih Pesanan dari daftar</li>
+            <li>Lihat Sisa Pembayaran</li>
+            <li>Jika masih ada tagihan:
+                <ul>
+                    <li>Input Jumlah Pembayaran</li>
+                    <li>Jika pembayaran >= sisa: Status = PAID</li>
+                    <li>Jika pembayaran < sisa: Status = PARTIAL</li>
+                </ul>
+            </li>
+            <li>Sistem Auto Jurnal Pelunasan:
+                <ul>
+                    <li>Debit Kas (111)</li>
+                    <li>Kredit Pendapatan (411)</li>
+                    <li>Jika ada DP sebelumnya: Jurnal balik Pendapatan Diterima Dimuka (211)</li>
+                </ul>
+            </li>
+            <li>Update Saldo Akun</li>
+        </ol>
+    </div>
+
+    <h3>4.3 Alur Pencatatan HPP (Saat Produksi Selesai)</h3>
+    <div class="diagram-box">
+        <ol>
+            <li>Pesanan diubah status menjadi "Completed"</li>
+            <li>Sistem cek apakah HPP sudah dicatat (hpp_recorded)</li>
+            <li>Jika belum:
+                <ul>
+                    <li>Hitung Total HPP dari Material Usage</li>
+                    <li>Jurnal Debit: Beban HPP (511)</li>
+                    <li>Jurnal Kredit: Persediaan Bahan (113)</li>
+                    <li>Update flag hpp_recorded = true</li>
+                </ul>
+            </li>
+            <li>Jika sudah dicatat: Skip (prevent duplicate)</li>
+        </ol>
+    </div>
+
+    <h3>4.4 Alur Pembelian Bahan Baku</h3>
+    <div class="diagram-box">
+        <ol>
+            <li>Owner Login ke sistem</li>
+            <li>Buka Menu Material</li>
+            <li>Pilih Material yang akan ditambah stoknya</li>
+            <li>Klik "Tambah Stok"</li>
+            <li>Input Quantity dan Harga per Unit</li>
+            <li>Sistem Auto Jurnal:
+                <ul>
+                    <li>Debit Persediaan Bahan (113)</li>
+                    <li>Kredit Kas (111)</li>
+                </ul>
+            </li>
+            <li>Create Inventory Log (type=in)</li>
+            <li>Update Material Stock Quantity</li>
+        </ol>
+    </div>
+
+    <h2>5. Sequence Diagram</h2>
+
+    <h3>5.1 Sequence: Buat Pesanan dengan DP</h3>
+    <div class="diagram-box">
+        <p><strong>Participants:</strong> Admin → OrderResource (UI) → OrderService → Order Model → OrderItem Model → AccountingService → Account Model → Transaction Model</p>
+        <ol>
+            <li>Admin create new order via UI</li>
+            <li>UI calls OrderService.createOrder(data, items)</li>
+            <li>OrderService creates Order record</li>
+            <li>For each item: OrderService creates OrderItem (auto-calculate subtotal)</li>
+            <li>OrderService calls Order.calculateTotal()</li>
+            <li>If has DP: UI calls AccountingService.recordDownPayment(order, dp_amount)</li>
+            <li>AccountingService finds Kas account (111)</li>
+            <li>AccountingService creates DEBIT transaction for Kas</li>
+            <li>Transaction updates Account balance</li>
+            <li>AccountingService finds Pendapatan Diterima Dimuka account (211)</li>
+            <li>AccountingService creates CREDIT transaction</li>
+            <li>Transaction updates Account balance</li>
+            <li>Return success to Admin</li>
+        </ol>
+    </div>
+
+    <h3>5.2 Sequence: Pelunasan Pembayaran</h3>
+    <div class="diagram-box">
+        <p><strong>Participants:</strong> Admin → OrderResource (UI) → Order Model → AccountingService → Account Model → Transaction Model</p>
+        <ol>
+            <li>Admin selects order and clicks "Record Payment"</li>
+            <li>UI gets remaining_amount from Order</li>
+            <li>Admin enters payment amount</li>
+            <li>UI calls AccountingService.recordPayment(order, amount)</li>
+            <li>AccountingService creates DEBIT Kas (111)</li>
+            <li>If has previous DP:
+                <ul>
+                    <li>Create DEBIT Pendapatan Diterima Dimuka (211) - reverse DP</li>
+                    <li>Create CREDIT Pendapatan Jasa (411) - recognize revenue from DP</li>
+                </ul>
+            </li>
+            <li>Create CREDIT Pendapatan Jasa (411) for payment</li>
+            <li>UI calls Order.updatePaymentStatus()</li>
+            <li>Order sets status based on paid_amount vs total_amount</li>
+            <li>Return success to Admin</li>
+        </ol>
+    </div>
+
+    <h3>5.3 Sequence: Pencatatan HPP</h3>
+    <div class="diagram-box">
+        <p><strong>Participants:</strong> Admin → OrderResource (UI) → Order Model → OrderItem Model → MaterialUsage Model → AccountingService → InventoryService → Material Model → InventoryLog Model</p>
+        <ol>
+            <li>Admin changes production_status to 'completed'</li>
+            <li>UI checks if hpp_recorded is false</li>
+            <li>UI calls Order.calculateHPP()</li>
+            <li>Order gets all items and sums total_hpp from MaterialUsage</li>
+            <li>UI calls AccountingService.recordHPP(order)</li>
+            <li>AccountingService creates DEBIT Beban HPP (511)</li>
+            <li>AccountingService creates CREDIT Persediaan Bahan (113)</li>
+            <li>UI calls InventoryService.recordOrderMaterialUsage(order)</li>
+            <li>For each usage: InventoryService creates InventoryLog (type=out)</li>
+            <li>Material.adjustStock('out', quantity)</li>
+            <li>UI sets Order.hpp_recorded = true</li>
+        </ol>
+    </div>
+
+    <h3>5.4 Sequence: Void/Batalkan Pesanan</h3>
+    <div class="diagram-box">
+        <p><strong>Participants:</strong> Owner → OrderResource (UI) → Order Model → AccountingService → Transaction Model → Account Model</p>
+        <ol>
+            <li>Owner clicks "Void Order" and enters reason</li>
+            <li>UI calls AccountingService.voidOrderTransactions(order, userId, reason)</li>
+            <li>AccountingService gets all active transactions for order</li>
+            <li>For each transaction:
+                <ul>
+                    <li>Transaction.void(userId, reason)</li>
+                    <li>Set is_void = true, voided_at, voided_by, void_reason</li>
+                    <li>Account.reverseBalance(type, amount) - reverse the original effect</li>
+                </ul>
+            </li>
+            <li>UI updates Order: voided_at, voided_by, void_reason</li>
+            <li>Return success to Owner</li>
+        </ol>
+    </div>
+
+    <h2>6. Ringkasan Alur Bisnis Utama</h2>
+
+    <h3>6.1 Siklus Order-to-Cash</h3>
+    <div class="diagram-box">
+        <div class="flow">
+            <span class="flow-item">📋 Buat Pesanan</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">💰 Terima DP</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">🏭 Proses Produksi</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📦 Selesai Produksi</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📊 Catat HPP</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">💵 Terima Pelunasan</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">✅ Complete</span>
+        </div>
+    </div>
+
+    <h3>6.2 Siklus Inventory</h3>
+    <div class="diagram-box">
+        <div class="flow">
+            <span class="flow-item">📥 Beli Bahan</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📦 Stok Masuk</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">🏭 Produksi</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📤 Pemakaian</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📊 Catat HPP</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-item">📉 Stok Berkurang</span>
+        </div>
+    </div>
+
+    <h3>6.3 Jurnal Akuntansi Otomatis ("Invisible Accounting")</h3>
+    <table>
+        <tr><th>Event</th><th>Jurnal Otomatis</th></tr>
+        <tr><td>Terima DP</td><td>DR Kas (111), CR Pendapatan Diterima Dimuka (211)</td></tr>
+        <tr><td>Pelunasan</td><td>DR Kas (111), CR Pendapatan (411) + jika ada DP: DR PDD (211), CR Pendapatan (411)</td></tr>
+        <tr><td>Produksi Selesai (HPP)</td><td>DR Beban HPP (511), CR Persediaan (113)</td></tr>
+        <tr><td>Beli Bahan</td><td>DR Persediaan (113), CR Kas (111)</td></tr>
+        <tr><td>Void Order</td><td>Jurnal balik semua transaksi terkait</td></tr>
+        <tr><td>Beban Operasional</td><td>DR Beban 6xx, CR Kas (111)</td></tr>
+    </table>
+
+    <h2>7. Role-Based Access Control (RBAC)</h2>
+    <table>
+        <tr><th>Fitur</th><th class="center">Owner</th><th class="center">Admin</th></tr>
+        <tr><td>Kelola Produk</td><td class="center">✅</td><td class="center">✅</td></tr>
+        <tr><td>Kelola Pelanggan</td><td class="center">✅</td><td class="center">✅</td></tr>
+        <tr><td>Kelola Material</td><td class="center">✅</td><td class="center">❌</td></tr>
+        <tr><td>Buat/Edit Pesanan</td><td class="center">✅</td><td class="center">✅</td></tr>
+        <tr><td>Batalkan Pesanan</td><td class="center">✅</td><td class="center">❌</td></tr>
+        <tr><td>Terima Pembayaran</td><td class="center">✅</td><td class="center">✅</td></tr>
+        <tr><td>Lihat Neraca</td><td class="center">✅</td><td class="center">❌</td></tr>
+        <tr><td>Lihat Laba Rugi</td><td class="center">✅</td><td class="center">❌</td></tr>
+        <tr><td>Lihat Rekap Laporan</td><td class="center">✅</td><td class="center">✅ (terbatas)</td></tr>
+        <tr><td>Export Laporan</td><td class="center">✅</td><td class="center">❌</td></tr>
+        <tr><td>Input Pembelian Bahan</td><td class="center">✅</td><td class="center">❌</td></tr>
+    </table>
+
+    <h2>8. Teknologi yang Digunakan</h2>
+    <table>
+        <tr><th>Layer</th><th>Teknologi</th></tr>
+        <tr><td>Backend</td><td>Laravel 10+ (PHP 8.1+)</td></tr>
+        <tr><td>Admin Panel</td><td>Filament 3.x</td></tr>
+        <tr><td>Database</td><td>MySQL / PostgreSQL</td></tr>
+        <tr><td>PDF Export</td><td>barryvdh/laravel-dompdf</td></tr>
+        <tr><td>Excel Export</td><td>maatwebsite/excel</td></tr>
+    </table>
+
+    <hr>
+    <p style="text-align: center; font-style: italic; margin-top: 30px;">
+        Dokumen ini dibuat untuk keperluan dokumentasi skripsi.<br>
+        Gunakan tombol "Print" di pojok kanan atas untuk menyimpan sebagai PDF.
+    </p>
+</body>
+</html>

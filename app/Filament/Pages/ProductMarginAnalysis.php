@@ -141,8 +141,8 @@ class ProductMarginAnalysis extends Page implements HasForms
     {
         return [
             Action::make('generatePdfReport')
-                ->label('Generate Laporan')
-                ->icon('heroicon-o-document-arrow-down')
+                ->label('Cetak Laporan')
+                ->icon('heroicon-o-printer')
                 ->color('success')
                 ->action(function () {
                     // Ensure report data is fresh
