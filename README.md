@@ -184,10 +184,10 @@ Analisis profitabilitas per produk:
 
 ```bash
 # Clone repository
-git clone [repository-url]
+git clone https://github.com/x-why-z/Laporan-Keuangan-Laravel.git
 
 # Pindah ke direktori proyek
-cd laravel-project
+cd Percetakan-Mutiara-Rizki
 
 # Install dependencies
 composer install
