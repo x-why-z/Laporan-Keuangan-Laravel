@@ -1,66 +1,225 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aplikasi Laporan Keuangan - Percetakan Mutiara Rizki
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Laravel Logo">
 </p>
 
-## About Laravel
+<p align="center">
+  <strong>Sistem Informasi Laporan Keuangan Berbasis Web</strong><br>
+  Dibangun dengan Framework Laravel
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Deskripsi Aplikasi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Aplikasi Laporan Keuangan Percetakan Mutiara Rizki adalah sistem informasi berbasis web yang dirancang untuk mengelola seluruh aspek keuangan usaha percetakan. Sistem ini menyediakan fitur lengkap mulai dari pencatatan data master, manajemen transaksi pesanan, hingga pembuatan laporan keuangan yang komprehensif.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## ✨ Fitur Utama
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🔐 Autentikasi Pengguna
+Sistem login yang aman dengan fitur:
+- Email dan password authentication
+- Fitur "Remember Me" untuk kemudahan akses
+- Session management untuk keamanan data
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+![Menu Login](SS%20APLIKASI/MENU%20LOGIN.JPG)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 📊 Dashboard
+Dashboard interaktif yang menampilkan ringkasan keuangan secara real-time:
+- **Omset Bulan Ini** - Total pendapatan kotor bulanan
+- **HPP Bulan Ini** - Harga Pokok Penjualan
+- **Laba Kotor** - Selisih omset dan HPP dengan persentase margin
+- **Saldo Kas** - Posisi kas saat ini
+- **Pendapatan Hari Ini** - Tracking pendapatan harian
+- **Pendapatan Bulan Ini** - Akumulasi pendapatan bulanan
+- **Laba Bersih** - Laba/Rugi bersih periode berjalan
 
-### Premium Partners
+![Dashboard](SS%20APLIKASI/DASHBOARD.JPG)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+---
 
-## Contributing
+## 📁 Master Data
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 👥 Menu Pelanggan
+Manajemen data pelanggan dengan fitur:
+- Pencatatan nama, nomor telepon, dan alamat lengkap
+- Tracking jumlah pesanan per pelanggan
+- Fungsi pencarian dan filter data
+- Tambah, edit, dan hapus data pelanggan
 
-## Code of Conduct
+![Menu Pelanggan](SS%20APLIKASI/MENU%20PELANGGAN.JPG)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+### 🏭 Menu Produk
+Katalog produk percetakan dengan informasi:
+- Nama produk dan satuan
+- Tipe harga (Per Area, Per Unit, dll)
+- Harga jual produk
+- Deskripsi spesifikasi produk
+- Manajemen CRUD produk
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+![Menu Produk](SS%20APLIKASI/MENU%20PRODUK.JPG)
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 📦 Menu Bahan Baku
+Pengelolaan inventori bahan baku:
+- Data bahan baku (HVS, Art Paper, Art Carton, dll)
+- Jumlah stok dan satuan
+- Harga beli per satuan
+- Status aktif/non-aktif bahan
+- Fitur tambah stok
+- Tracking stok minimum
+
+![Menu Bahan Baku](SS%20APLIKASI/MENU%20BAHAN%20BAKU.JPG)
+
+---
+
+## 📝 Transaksi
+
+### 🛒 Menu Pesanan
+Manajemen pesanan pelanggan dengan fitur:
+- Nomor pesanan otomatis
+- Data pelanggan terkait
+- Tanggal pesanan dan deadline
+- Status pesanan (Menunggu, Selesai)
+- Status produksi (Antrian, Selesai)
+- Status pembayaran (Sebagian, Belum Bayar, Lunas)
+- Total nilai pesanan
+
+![Menu Pesanan](SS%20APLIKASI/MENU%20PESANAN.JPG)
+
+---
+
+## 📈 Laporan Keuangan
+
+### 📑 Rekap Laporan
+Laporan keuangan komprehensif dengan:
+- Filter periode (Tanggal Mulai - Tanggal Akhir)
+- Opsi tampilkan beban operasional
+- Ringkasan Total Omset, Total HPP, Laba Kotor
+- Rekap laporan keuangan detail
+- Export laporan ke PDF/Excel
+
+![Rekap Laporan](SS%20APLIKASI/REKAP%20LAPORAN.JPG)
+
+---
+
+### 📊 Neraca
+Laporan posisi keuangan yang mencakup:
+
+**ASET**
+- 111 - Kas
+- 112 - Piutang Usaha
+- 113 - Persediaan Bahan
+- 121 - Peralatan
+- 122 - Akumulasi Penyusutan Peralatan
+
+**Total Aset** dengan kalkulasi otomatis
+
+![Neraca](SS%20APLIKASI/NERACA.JPG)
+
+---
+
+### 📉 Analisis Margin Produk
+Analisis profitabilitas per produk:
+- Filter periode laporan
+- Quantity terjual per produk
+- Pendapatan per produk
+- Harga dasar dan harga jual rata-rata
+- Perhitungan Margin %
+- Kontribusi % terhadap total pendapatan
+- Export laporan analisis
+
+![Analisis Margin Produk](SS%20APLIKASI/ANALISI%20MARGIN%20PRODUK.JPG)
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+| Komponen | Teknologi |
+|----------|-----------|
+| Backend Framework | Laravel |
+| Frontend | Blade Template + CSS |
+| Database | MySQL/MariaDB |
+| Authentication | Laravel Sanctum/Built-in Auth |
+| Reporting | Laravel Excel/DomPDF |
+
+---
+
+## 📦 Struktur Menu Aplikasi
+
+```
+📁 Percetakan Mutiara Rizki
+├── 📊 Dashboard
+├── 📑 Laporan
+│   ├── Rekap Laporan
+│   ├── Neraca
+│   └── Analisis Margin Produk
+├── 📁 Master Data
+│   ├── Pelanggan
+│   ├── Produk
+│   └── Bahan Baku
+└── 📝 Transaksi
+    └── Pesanan
+```
+
+---
+
+## 🚀 Instalasi
+
+### Prasyarat
+- PHP >= 8.1
+- Composer
+- MySQL/MariaDB
+- Node.js & NPM
+
+### Langkah Instalasi
+
+```bash
+# Clone repository
+git clone [repository-url]
+
+# Pindah ke direktori proyek
+cd laravel-project
+
+# Install dependencies
+composer install
+npm install
+
+# Salin file environment
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+# Konfigurasi database di file .env
+
+# Jalankan migrasi dan seeder
+php artisan migrate --seed
+
+# Compile assets
+npm run dev
+
+# Jalankan server
+php artisan serve
+```
+
+---
+
+## 📄 Lisensi
+
+Aplikasi ini dikembangkan menggunakan framework [Laravel](https://laravel.com) yang dilisensikan di bawah [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+<p align="center">
+  <strong>Percetakan Mutiara Rizki</strong><br>
+  © 2026 - Sistem Informasi Laporan Keuangan
+</p>
